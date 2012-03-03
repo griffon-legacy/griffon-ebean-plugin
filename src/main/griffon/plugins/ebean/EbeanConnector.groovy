@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package griffon.plugins.ebean
 
 import javax.sql.DataSource
@@ -22,7 +23,7 @@ import com.avaje.ebean.EbeanServerFactory
 import com.avaje.ebean.config.ServerConfig
 
 import griffon.core.GriffonApplication
-import griffon.util.RunnableWithArgs
+import griffon.util.CallableWithArgs
 import griffon.plugins.datasource.DataSourceHolder
 import griffon.plugins.datasource.DataSourceConnector
 
@@ -30,30 +31,15 @@ import griffon.plugins.datasource.DataSourceConnector
  * @author Andres Almiray
  */
 @Singleton
-final class EbeanConnector {
+final class EbeanConnector implements EbeanProvider {
     private bootstrap
 
-    static void enhance(MetaClass mc) {
-        mc.withEbean = {Closure closure ->
-            EbeanServerHolder.instance.withEbean('default', closure)
-        }
-        mc.withEbean << {String ebeanServerName, Closure closure ->
-            EbeanServerHolder.instance.withEbean(ebeanServerName, closure)
-        }
-        mc.withEbean << {RunnableWithArgs runnable ->
-            EbeanServerHolder.instance.withEbean('default', runnable)
-        }
-        mc.withEbean << {String ebeanServerName, RunnableWithArgs runnable ->
-            EbeanServerHolder.instance.withEbean(ebeanServerName, runnable)
-        }
-    }
-
-    void withEbean(String ebeanServerName = 'default', Closure closure) {
+    Object withEbean(String ebeanServerName = 'default', Closure closure) {
         EbeanServerHolder.instance.withEbean(ebeanServerName, closure)
     }
 
-    void withEbean(String ebeanServerName = 'default', RunnableWithArgs runnable) {
-        EbeanServerHolder.instance.withEbean(ebeanServerName, runnable)
+    public <T> T withEbean(String ebeanServerName = 'default', CallableWithArgs<T> callable) {
+        EbeanServerHolder.instance.withEbean(ebeanServerName, callable)
     }
 
     // ======================================================

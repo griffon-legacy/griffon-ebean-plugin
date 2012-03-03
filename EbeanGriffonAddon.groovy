@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import griffon.core.GriffonClass
 import griffon.core.GriffonApplication
 import griffon.plugins.ebean.EbeanConnector
+import griffon.plugins.ebean.EbeanEnhancer
 
 /**
  * @author Andres Almiray
@@ -25,15 +27,18 @@ class EbeanGriffonAddon {
         EbeanConnector.instance.connect(app)
     }
 
+    void addonPostInit(GriffonApplication app) {
+        def types = app.config.griffon?.ebean?.injectInto ?: ['controller']
+        for(String type : types) {
+            for(GriffonClass gc : app.artifactManager.getClassesOfType(type)) {
+                EbeanEnhancer.enhance(gc.metaClass)
+            }
+        }
+    }
+
     def events = [
         ShutdownStart: { app ->
             EbeanConnector.instance.disconnect(app)
-        },
-        NewInstance: { klass, type, instance ->
-            def types = app.config.griffon?.ebean?.injectInto ?: ['controller']
-            if(!types.contains(type)) return
-            def mc = app.artifactManager.findGriffonClass(klass).metaClass
-            EbeanConnector.enhance(mc)
         }
     ]
 }

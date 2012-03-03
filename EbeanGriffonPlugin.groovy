@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,31 +18,140 @@
  */
 class EbeanGriffonPlugin {
     // the plugin version
-    def version = "0.2"
+    String version = '0.4'
     // the version or versions of Griffon the plugin is designed for
-    def griffonVersion = '0.9.4 > *' 
+    String griffonVersion = '0.9.5 > *'
     // the other plugins this plugin depends on
-    def dependsOn = [datasource: 0.2]
+    Map dependsOn = [datasource: '0.3']
     // resources that are included in plugin packaging
-    def pluginIncludes = []
+    List pluginIncludes = []
     // the plugin license
-    def license = 'Apache Software License 2.0'
+    String license = 'Apache Software License 2.0'
     // Toolkit compatibility. No value means compatible with all
     // Valid values are: swing, javafx, swt, pivot, gtk
-    def toolkits = ['']
+    List toolkits = []
     // Platform compatibility. No value means compatible with all
     // Valid values are:
     // linux, linux64, windows, windows64, macosx, macosx64, solaris
-    def platforms = []
+    List platforms = []
+    // URL where documentation can be found
+    String documentation = ''
+    // URL where source can be found
+    String source = 'https://github.com/griffon/griffon-ebean-plugin'
 
-    def author = 'Andres Almiray'
-    def authorEmail = 'aalmiray@users.sourceforge.net'
-    def title = 'Persistence support via Ebean'
-    def description = '''
-Persistence support via Ebean
-http://www.avaje.org/
+    List authors = [
+        [
+            name: 'Andres Almiray',
+            email: 'aalmiray@yahoo.com'
+        ]
+    ]
+    String title = 'Ebean support'
+    String description = '''
+The Ebean plugin enables lightweight access to datasources using [Ebean][1].
+This plugin does NOT provide domain classes nor dynamic finders like GORM does.
+
+Usage
+-----
+Upon installation the plugin will generate the following artifacts in `$appdir/griffon-app/conf`:
+
+ * DataSource.groovy - contains the datasource and pool definitions. Its format is equal to GORM's requirements.
+ Additional configuration for this artifact is explained in the [DataSource Plugin][2].
+ * BootstrapEbean.groovy - defines init/destroy hooks for data to be manipulated during app startup/shutdown.
+
+A new dynamic method named `withEbean` will be injected into all controllers,
+giving you access to a `com.avaje.ebean.EbeanServer` object, with which you'll be able
+to make calls to the database. Remember to make all database calls off the EDT
+otherwise your application may appear unresponsive when doing long computations
+inside the EDT.
+This method is aware of multiple databases. If no databaseName is specified when calling
+it then the default database will be selected. Here are two example usages, the first
+queries against the default database while the second queries a database whose name has
+been configured as 'internal'
+
+	package sample
+	class SampleController {
+	    def queryAllDatabases = {
+	        withEbean { ebeanServerName, ebeanServer -> ... }
+	        withEbean('internal') { ebeanServerName, ebeanServer -> ... }
+	    }
+	}
+	
+This method is also accessible to any component through the singleton `griffon.plugins.ebean.EbeanConnector`.
+You can inject these methods to non-artifacts via metaclasses. Simply grab hold of a particular metaclass and call
+`EbeanEnhancer.enhance(metaClassInstance, ebeanProviderInstance)`.
+
+Configuration
+-------------
+### Dynamic method injection
+
+The `withEbean()` dynamic method will be added to controllers by default. You can
+change this setting by adding a configuration flag in `griffon-app/conf/Config.groovy`
+
+    griffon.ebean.injectInto = ['controller', 'service']
+
+### Events
+
+The following events will be triggered by this addon
+
+ * EbeanConnectStart[config, databaseName] - triggered before connecting to the database
+ * EbeanConnectEnd[databaseName, database] - triggered after connecting to the database
+ * EbeanDisconnectStart[config, databaseName, database] - triggered before disconnecting from the database
+ * EbeanDisconnectEnd[config, databaseName] - triggered after disconnecting from the database
+
+### Multiple Stores
+
+The config file `EbeanConfig.groovy` defines a default database block. As the name
+implies this is the database used by default, however you can configure named databases
+by adding a new config block. For example connecting to a database whose name is 'internal'
+can be done in this way
+
+	databases {
+	    internal {
+		    host = 'server.acme.com'
+		}
+	}
+
+This block can be used inside the `environments()` block in the same way as the
+default database block is used.
+
+### Example
+
+A trivial sample application can be found at [https://github.com/aalmiray/griffon_sample_apps/tree/master/persistence/ebean][3]
+
+Testing
+-------
+The `withEbean()` dynamic method will not be automatically injected during unit testing, because addons are simply not initialized
+for this kind of tests. However you can use `EbeanEnhancer.enhance(metaClassInstance, ebeanProviderInstance)` where 
+`ebeanProviderInstance` is of type `griffon.plugins.ebean.EbeanProvider`. The contract for this interface looks like this
+
+    public interface EbeanProvider {
+        Object withEbean(Closure closure);
+        Object withEbean(String ebeanServerName, Closure closure);
+        <T> T withEbean(CallableWithArgs<T> callable);
+        <T> T withEbean(String ebeanServerName, CallableWithArgs<T> callable);
+    }
+
+It's up to you define how these methods need to be implemented for your tests. For example, here's an implementation that never
+fails regardless of the arguments it receives
+
+    class MyEbeanProvider implements EbeanProvider {
+        Object withEbean(String ebeanServerName = 'default', Closure closure) { null }
+        public <T> T withEbean(String ebeanServerName = 'default', CallableWithArgs<T> callable) { null }      
+    }
+    
+This implementation may be used in the following way
+
+    class MyServiceTests extends GriffonUnitTestCase {
+        void testSmokeAndMirrors() {
+            MyService service = new MyService()
+            EbeanEnhancer.enhance(service.metaClass, new MyEbeanProvider())
+            // exercise service methods
+        }
+    }
+
+
+[1]: http://www.avaje.org
+[2]: /plugin/datasource
+[3]: https://github.com/aalmiray/griffon_sample_apps/tree/master/persistence/ebean
 '''
-
-    // URL to the plugin's documentation
-    def documentation = 'http://griffon.codehaus.org/Ebean+Plugin'
 }

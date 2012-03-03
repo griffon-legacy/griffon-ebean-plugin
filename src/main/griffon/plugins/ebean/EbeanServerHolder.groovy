@@ -20,33 +20,16 @@ import com.avaje.ebean.EbeanServer
 
 import griffon.core.GriffonApplication
 import griffon.util.ApplicationHolder
-import griffon.util.RunnableWithArgs
+import griffon.util.CallableWithArgs
 import static griffon.util.GriffonNameUtils.isBlank
 
 /**
  * @author Andres Almiray
  */
 @Singleton
-class EbeanServerHolder {
+class EbeanServerHolder implements EbeanProvider {
     private static final Object[] LOCK = new Object[0]
     private final Map<String, EbeanServer> ebeanServers = [:]
-
-    static void enhance(MetaClass mc) {
-        mc.withEbean = {Closure closure ->
-            EbeanServerHolder.instance.withEbean('default', closure)
-        }
-        mc.withEbean << {String ebeanServerName, Closure closure ->
-            EbeanServerHolder.instance.withEbean(ebeanServerName, closure)
-        }
-        mc.withEbean << {RunnableWithArgs runnable ->
-            EbeanServerHolder.instance.withEbean('default', runnable)
-        }
-        mc.withEbean << {String ebeanServerName, RunnableWithArgs runnable ->
-            EbeanServerHolder.instance.withEbean(ebeanServerName, runnable)
-        }
-    }
-
-    // ======================================================
 
     String[] getEbeanServerNames() {
         List<String> ebeanServerNames = new ArrayList().addAll(ebeanServers.keySet())
@@ -63,15 +46,15 @@ class EbeanServerHolder {
         storeEbeanServer(ebeanServerName, ebeanServer)       
     }
 
-    void withEbean(String ebeanServerName = 'default', Closure closure) {
+    Object withEbean(String ebeanServerName = 'default', Closure closure) {
         EbeanServer ebeanServer = fetchEbeanServer(ebeanServerName)
-        closure(ebeanServerName, ebeanServer)
+        return closure(ebeanServerName, ebeanServer)
     }
 
-    void withEbean(String ebeanServerName = 'default', RunnableWithArgs runnable) {
+    public <T> T withEbean(String ebeanServerName = 'default', CallableWithArgs<T> callable) {
         EbeanServer ebeanServer = fetchEbeanServer(ebeanServerName)
-        runnable.args = [ebeanServerName, ebeanServer] as Object[]
-        runnable.run()
+        callable.args = [ebeanServerName, ebeanServer] as Object[]
+        return callable.run()
     }
     
     boolean isEbeanServerAvailable(String ebeanServerName) {
