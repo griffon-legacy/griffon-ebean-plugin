@@ -27,7 +27,7 @@ final class EbeanEnhancer {
     private static final Logger LOG = LoggerFactory.getLogger(EbeanEnhancer)
 
     private EbeanEnhancer() {}
-    
+
     static void enhance(MetaClass mc, EbeanProvider provider = EbeanServerHolder.instance) {
         if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withEbean = {Closure closure ->

@@ -24,6 +24,7 @@ import com.avaje.ebean.config.ServerConfig
 
 import griffon.core.GriffonApplication
 import griffon.util.CallableWithArgs
+import griffon.util.ConfigUtils
 import griffon.plugins.datasource.DataSourceHolder
 import griffon.plugins.datasource.DataSourceConnector
 
@@ -45,11 +46,10 @@ final class EbeanConnector implements EbeanProvider {
     // ======================================================
 
     ConfigObject createConfig(GriffonApplication app) {
-        def configClass = app.class.classLoader.loadClass('EbeanConfig')
-        new ConfigSlurper(griffon.util.Environment.current.name).parse(configClass) 
-    }   
-    
-    private ConfigObject narrowConfig(ConfigObject config, String ebeanServerName) {   
+        ConfigUtils.loadConfigWithI18n('EbeanConfig')
+    }
+
+    private ConfigObject narrowConfig(ConfigObject config, String ebeanServerName) {
         return ebeanServerName == 'default' ? config.ebeanServer : config.ebeanServers[ebeanServerName]
     }
 
@@ -57,7 +57,7 @@ final class EbeanConnector implements EbeanProvider {
         if(EbeanServerHolder.instance.isEbeanServerAvailable(ebeanServerName)) {
             return EbeanServerHolder.instance.getEbeanServer(ebeanServerName)
         }
-        
+
         ConfigObject dsConfig = DataSourceConnector.instance.createConfig(app)
         if(ebeanServerName == 'default') {
             dsConfig.dataSource.schema.skip = true

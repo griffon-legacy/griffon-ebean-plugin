@@ -36,7 +36,7 @@ class EbeanGriffonAddon {
         }
     }
 
-    def events = [
+    Map events = [
         ShutdownStart: { app ->
             EbeanConnector.instance.disconnect(app)
         }

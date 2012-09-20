@@ -6,7 +6,7 @@ griffon.project.dependency.resolution = {
         mavenCentral()
     }
     dependencies {
-        compile('org.avaje:ebean:2.7.4') {
+        compile('org.avaje:ebean:2.7.7') {
             excludes 'servlet-api', 'ant', 'scala-library', 'maven-plugin-api'
         }
         runtime 'javax.persistence:persistence-api:1.0'

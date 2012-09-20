@@ -1,5 +1,5 @@
 /*
- * Copyright 2011 the original author or authors.
+ * Copyright 2011-2012 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ class EbeanServerHolder implements EbeanProvider {
 
     void setEbeanServer(String ebeanServerName = 'default', EbeanServer ebeanServer) {
         if(isBlank(ebeanServerName)) ebeanServerName = 'default'
-        storeEbeanServer(ebeanServerName, ebeanServer)       
+        storeEbeanServer(ebeanServerName, ebeanServer)
     }
 
     Object withEbean(String ebeanServerName = 'default', Closure closure) {
@@ -56,15 +56,15 @@ class EbeanServerHolder implements EbeanProvider {
         callable.args = [ebeanServerName, ebeanServer] as Object[]
         return callable.run()
     }
-    
+
     boolean isEbeanServerAvailable(String ebeanServerName) {
         if(isBlank(ebeanServerName)) ebeanServerName = 'default'
         retrieveEbeanServer(ebeanServerName) != null
     }
-    
+
     void disconnectEbeanServer(String ebeanServerName) {
         if(isBlank(ebeanServerName)) ebeanServerName = 'default'
-        storeEbeanServer(ebeanServerName, null)        
+        storeEbeanServer(ebeanServerName, null)
     }
 
     private EbeanServer fetchEbeanServer(String ebeanServerName) {
