@@ -1,5 +1,5 @@
 /*
- * Copyright 2011-2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,55 +20,53 @@ import com.avaje.ebean.EbeanServer
 
 import griffon.core.GriffonApplication
 import griffon.util.ApplicationHolder
-import griffon.util.CallableWithArgs
 import static griffon.util.GriffonNameUtils.isBlank
 
 /**
  * @author Andres Almiray
  */
-@Singleton
-class EbeanServerHolder implements EbeanProvider {
+class EbeanServerHolder {
+    private static final String DEFAULT = 'default'
     private static final Object[] LOCK = new Object[0]
     private final Map<String, EbeanServer> ebeanServers = [:]
+
+    private static final EbeanServerHolder INSTANCE
+
+    static {
+        INSTANCE = new EbeanServerHolder()
+    }
+
+    static EbeanServerHolder getInstance() {
+        INSTANCE
+    }
 
     String[] getEbeanServerNames() {
         List<String> ebeanServerNames = new ArrayList().addAll(ebeanServers.keySet())
         ebeanServerNames.toArray(new String[ebeanServerNames.size()])
     }
 
-    EbeanServer getEbeanServer(String ebeanServerName = 'default') {
-        if(isBlank(ebeanServerName)) ebeanServerName = 'default'
+    EbeanServer getEbeanServer(String ebeanServerName = DEFAULT) {
+        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         retrieveEbeanServer(ebeanServerName)
     }
 
-    void setEbeanServer(String ebeanServerName = 'default', EbeanServer ebeanServer) {
-        if(isBlank(ebeanServerName)) ebeanServerName = 'default'
+    void setEbeanServer(String ebeanServerName = DEFAULT, EbeanServer ebeanServer) {
+        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         storeEbeanServer(ebeanServerName, ebeanServer)
     }
 
-    Object withEbean(String ebeanServerName = 'default', Closure closure) {
-        EbeanServer ebeanServer = fetchEbeanServer(ebeanServerName)
-        return closure(ebeanServerName, ebeanServer)
-    }
-
-    public <T> T withEbean(String ebeanServerName = 'default', CallableWithArgs<T> callable) {
-        EbeanServer ebeanServer = fetchEbeanServer(ebeanServerName)
-        callable.args = [ebeanServerName, ebeanServer] as Object[]
-        return callable.run()
-    }
-
     boolean isEbeanServerAvailable(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = 'default'
+        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         retrieveEbeanServer(ebeanServerName) != null
     }
 
     void disconnectEbeanServer(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = 'default'
+        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         storeEbeanServer(ebeanServerName, null)
     }
 
-    private EbeanServer fetchEbeanServer(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = 'default'
+    EbeanServer fetchEbeanServer(String ebeanServerName) {
+        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         EbeanServer ebeanServer = retrieveEbeanServer(ebeanServerName)
         if(ebeanServer == null) {
             GriffonApplication app = ApplicationHolder.application

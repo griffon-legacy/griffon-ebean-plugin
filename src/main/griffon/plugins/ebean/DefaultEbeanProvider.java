@@ -16,18 +16,24 @@
 
 package griffon.plugins.ebean;
 
-import griffon.util.CallableWithArgs;
-import groovy.lang.Closure;
+import com.avaje.ebean.EbeanServer;
 
 /**
  * @author Andres Almiray
  */
-public interface EbeanProvider {
-    <R> R withEbean(Closure<R> closure);
+public class DefaultEbeanProvider extends AbstractEbeanProvider {
+    private static final DefaultEbeanProvider INSTANCE;
 
-    <R> R withEbean(String ebeanServerName, Closure<R> closure);
+    static {
+        INSTANCE = new DefaultEbeanProvider();
+    }
 
-    <R> R withEbean(CallableWithArgs<R> callable);
+    public static DefaultEbeanProvider getInstance() {
+        return INSTANCE;
+    }
 
-    <R> R withEbean(String ebeanServerName, CallableWithArgs<R> callable);
+    @Override
+    protected EbeanServer getEbeanServer(String ebeanServerName) {
+        return EbeanServerHolder.getInstance().fetchEbeanServer(ebeanServerName);
+    }
 }

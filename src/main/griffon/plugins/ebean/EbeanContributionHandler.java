@@ -22,7 +22,11 @@ import groovy.lang.Closure;
 /**
  * @author Andres Almiray
  */
-public interface EbeanProvider {
+public interface EbeanContributionHandler {
+    void setEbeanProvider(EbeanProvider provider);
+
+    EbeanProvider getEbeanProvider();
+
     <R> R withEbean(Closure<R> closure);
 
     <R> R withEbean(String ebeanServerName, Closure<R> closure);

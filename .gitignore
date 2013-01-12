@@ -1,2 +1,5 @@
 target
 release_notes.md
+.idea
+ebean-griffonPluginFixes.iml
+ebean.iml

@@ -14,20 +14,12 @@
  * limitations under the License.
  */
 
-package griffon.plugins.ebean;
-
-import griffon.util.CallableWithArgs;
-import groovy.lang.Closure;
+package gdsl
 
 /**
  * @author Andres Almiray
  */
-public interface EbeanProvider {
-    <R> R withEbean(Closure<R> closure);
 
-    <R> R withEbean(String ebeanServerName, Closure<R> closure);
-
-    <R> R withEbean(CallableWithArgs<R> callable);
-
-    <R> R withEbean(String ebeanServerName, CallableWithArgs<R> callable);
+contributor(scope: annotatedScope(ctype: 'griffon.plugins.ebean.EbeanAware')) {
+    delegatesTo(findClass('griffon.plugins.ebean.EbeanContributionHandler'))
 }

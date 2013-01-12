@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,20 +24,21 @@ import org.slf4j.LoggerFactory
  * @author Andres Almiray
  */
 final class EbeanEnhancer {
+    private static final String DEFAULT = 'default'
     private static final Logger LOG = LoggerFactory.getLogger(EbeanEnhancer)
 
     private EbeanEnhancer() {}
-
-    static void enhance(MetaClass mc, EbeanProvider provider = EbeanServerHolder.instance) {
+    
+    static void enhance(MetaClass mc, EbeanProvider provider = DefaultEbeanProvider.instance) {
         if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withEbean = {Closure closure ->
-            provider.withEbean('default', closure)
+            provider.withEbean(DEFAULT, closure)
         }
         mc.withEbean << {String ebeanServerName, Closure closure ->
             provider.withEbean(ebeanServerName, closure)
         }
         mc.withEbean << {CallableWithArgs callable ->
-            provider.withEbean('default', callable)
+            provider.withEbean(DEFAULT, callable)
         }
         mc.withEbean << {String ebeanServerName, CallableWithArgs callable ->
             provider.withEbean(ebeanServerName, callable)
