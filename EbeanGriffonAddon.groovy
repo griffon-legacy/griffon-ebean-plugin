@@ -24,11 +24,8 @@ import griffon.plugins.ebean.EbeanContributionHandler
  * @author Andres Almiray
  */
 class EbeanGriffonAddon {
-    void addonInit(GriffonApplication app) {
-        EbeanConnector.instance.connect(app)
-    }
-
     void addonPostInit(GriffonApplication app) {
+        EbeanConnector.instance.connect(app)
         def types = app.config.griffon?.ebean?.injectInto ?: ['controller']
         for(String type : types) {
             for(GriffonClass gc : app.artifactManager.getClassesOfType(type)) {

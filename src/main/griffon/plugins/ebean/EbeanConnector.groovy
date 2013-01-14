@@ -36,7 +36,10 @@ final class EbeanConnector {
     private bootstrap
 
     ConfigObject createConfig(GriffonApplication app) {
-        ConfigUtils.loadConfigWithI18n('EbeanConfig')
+        if (!app.config.pluginConfig.ebean) {
+            app.config.pluginConfig.ebean = ConfigUtils.loadConfigWithI18n('EbeanConfig')
+        }
+        app.config.pluginConfig.ebean
     }
 
     private ConfigObject narrowConfig(ConfigObject config, String ebeanServerName) {
@@ -49,7 +52,7 @@ final class EbeanConnector {
         }
 
         ConfigObject dsConfig = DataSourceConnector.instance.createConfig(app)
-        if(ebeanServerName == DEFAULT) {
+        if (ebeanServerName == DEFAULT) {
             dsConfig.dataSource.schema.skip = true
         } else {
             dsConfig.dataSources."$ebeanServerName".schema.skip = true
@@ -94,7 +97,7 @@ final class EbeanConnector {
     private EbeanServer createEbeanServer(ConfigObject config, ConfigObject dsConfig, String ebeanServerName) {
         DataSource dataSource = DataSourceHolder.instance.getDataSource(ebeanServerName)
         boolean dbCreate = false
-        if(ebeanServerName == DEFAULT) {
+        if (ebeanServerName == DEFAULT) {
             dbCreate = dsConfig.dataSource.dbCreate.toString() == 'create'
         } else {
             dbCreate = dsConfig.dataSources."$ebeanServerName".dbCreate.toString() == 'create'
