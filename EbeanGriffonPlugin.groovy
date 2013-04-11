@@ -7,7 +7,7 @@
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by getApplication()licable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -18,11 +18,11 @@
  */
 class EbeanGriffonPlugin {
     // the plugin version
-    String version = '1.0.1'
+    String version = '1.1.0'
     // the version or versions of Griffon the plugin is designed for
     String griffonVersion = '1.2.0 > *'
     // the other plugins this plugin depends on
-    Map dependsOn = [datasource: '1.1.0']
+    Map dependsOn = [datasource: '1.2.0']
     // resources that are included in plugin packaging
     List pluginIncludes = []
     // the plugin license
@@ -58,6 +58,7 @@ Upon installation the plugin will generate the following artifacts in
  * DataSource.groovy - contains the datasource and pool definitions. Its format
    is equal to GORM's requirements.
    Additional configuration for this artifact is explained in the [datasource][2] plugin.
+ * EbeanConfig.groovy - contains the eban server definitions.
  * BootstrapEbean.groovy - defines init/destroy hooks for data to be manipulated
    during app startup/shutdown.
 
@@ -125,6 +126,22 @@ The following events will be triggered by this addon
    disconnecting from the database
  * EbeanDisconnectEnd[config, databaseName] - triggered after disconnecting
    from the database
+
+### Configuration Storage
+
+The plugin will load and store the contents of `EbeanConfig.groovy` inside the
+application's configuration, under the `pluginConfig` namespace. You may retrieve
+and/or update values using
+
+    app.config.pluginConfig.ebean
+
+### Connect at Startup
+
+The plugin will attempt a connection to the default database at startup. If this
+behavior is not desired then specify the following configuration flag in
+`Config.groovy`
+
+    griffon.ebean.connect.onstartup = false
 
 ### Example
 

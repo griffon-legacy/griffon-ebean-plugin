@@ -46,35 +46,35 @@ class EbeanServerHolder {
     }
 
     EbeanServer getEbeanServer(String ebeanServerName = DEFAULT) {
-        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
+        if (isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         retrieveEbeanServer(ebeanServerName)
     }
 
     void setEbeanServer(String ebeanServerName = DEFAULT, EbeanServer ebeanServer) {
-        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
+        if (isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         storeEbeanServer(ebeanServerName, ebeanServer)
     }
 
     boolean isEbeanServerAvailable(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
+        if (isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         retrieveEbeanServer(ebeanServerName) != null
     }
 
     void disconnectEbeanServer(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
+        if (isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         storeEbeanServer(ebeanServerName, null)
     }
 
     EbeanServer fetchEbeanServer(String ebeanServerName) {
-        if(isBlank(ebeanServerName)) ebeanServerName = DEFAULT
+        if (isBlank(ebeanServerName)) ebeanServerName = DEFAULT
         EbeanServer ebeanServer = retrieveEbeanServer(ebeanServerName)
-        if(ebeanServer == null) {
+        if (ebeanServer == null) {
             GriffonApplication app = ApplicationHolder.application
             ConfigObject config = EbeanConnector.instance.createConfig(app)
             ebeanServer = EbeanConnector.instance.connect(app, config, ebeanServerName)
         }
         
-        if(ebeanServer == null) {
+        if (ebeanServer == null) {
             throw new IllegalArgumentException("No such EbeanServer configuration for name $ebeanServerName")
         }
         ebeanServer

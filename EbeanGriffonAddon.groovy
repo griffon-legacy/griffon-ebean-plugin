@@ -20,12 +20,17 @@ import griffon.plugins.ebean.EbeanConnector
 import griffon.plugins.ebean.EbeanEnhancer
 import griffon.plugins.ebean.EbeanContributionHandler
 
+import static griffon.util.ConfigUtils.getConfigValueAsBoolean
+
 /**
  * @author Andres Almiray
  */
 class EbeanGriffonAddon {
     void addonPostInit(GriffonApplication app) {
-        EbeanConnector.instance.connect(app)
+        ConfigObject config = EbeanConnector.instance.createConfig(app)
+        if (getConfigValueAsBoolean(app.config, 'griffon.ebean.connect.onstartup', true)) {
+            EbeanConnector.instance.connect(app, config)
+        }
         def types = app.config.griffon?.ebean?.injectInto ?: ['controller']
         for(String type : types) {
             for(GriffonClass gc : app.artifactManager.getClassesOfType(type)) {

@@ -30,7 +30,7 @@ final class EbeanEnhancer {
     private EbeanEnhancer() {}
     
     static void enhance(MetaClass mc, EbeanProvider provider = DefaultEbeanProvider.instance) {
-        if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
+        if (LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withEbean = {Closure closure ->
             provider.withEbean(DEFAULT, closure)
         }

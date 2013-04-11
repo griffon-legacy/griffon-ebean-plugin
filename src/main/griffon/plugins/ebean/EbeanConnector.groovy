@@ -43,11 +43,16 @@ final class EbeanConnector {
     }
 
     private ConfigObject narrowConfig(ConfigObject config, String ebeanServerName) {
-        return ebeanServerName == DEFAULT ? config.ebeanServer : config.ebeanServers[ebeanServerName]
+        if (config.containsKey('ebeanServer') && ebeanServerName == DEFAULT) {
+            return config.ebeanServer
+        } else if (config.containsKey('ebeanServers')) {
+            return config.ebeanServers[ebeanServerName]
+        }
+        return config
     }
 
-    EbeanServer connect(GriffonApplication app, String ebeanServerName = DEFAULT) {
-        if(EbeanServerHolder.instance.isEbeanServerAvailable(ebeanServerName)) {
+    EbeanServer connect(GriffonApplication app, ConfigObject config, String ebeanServerName = DEFAULT) {
+        if (EbeanServerHolder.instance.isEbeanServerAvailable(ebeanServerName)) {
             return EbeanServerHolder.instance.getEbeanServer(ebeanServerName)
         }
 
@@ -59,7 +64,7 @@ final class EbeanConnector {
         }
         DataSource dataSource = DataSourceConnector.instance.connect(app, dsConfig, ebeanServerName)
 
-        ConfigObject config = narrowConfig(createConfig(app), ebeanServerName)
+        config = narrowConfig(config, ebeanServerName)
         app.event('EbeanConnectStart', [config, ebeanServerName])
         EbeanServer ebeanServer = createEbeanServer(config, dsConfig, ebeanServerName)
         EbeanServerHolder.instance.setEbeanServer(ebeanServerName, ebeanServer)
@@ -71,15 +76,15 @@ final class EbeanConnector {
     }
 
     void disconnect(GriffonApplication app, String ebeanServerName = DEFAULT) {
-        if(!EbeanServerHolder.instance.isEbeanServerAvailable(ebeanServerName)) return
+        if (!EbeanServerHolder.instance.isEbeanServerAvailable(ebeanServerName)) return
 
         EbeanServer ebeanServer = EbeanServerHolder.instance.getEbeanServer(ebeanServerName)
         app.event('EbeanDisconnectStart', [ebeanServerName, ebeanServer])
         resolveEbeanProvider(app).withEbean(ebeanServerName) { ebsName, ebs -> bootstrap.destroy(ebsName, ebs) }
         EbeanServerHolder.instance.disconnectEbeanServer(ebeanServerName)
         app.event('EbeanDisconnectEnd', [ebeanServerName])
-        ConfigObject config = DataSourceConnector.instance.createConfig(app)
-        DataSourceConnector.instance.disconnect(app, config, ebeanServerName)
+        ConfigObject dsconfig = DataSourceConnector.instance.createConfig(app)
+        DataSourceConnector.instance.disconnect(app, dsconfig, ebeanServerName)
     }
 
     EbeanProvider resolveEbeanProvider(GriffonApplication app) {
@@ -100,7 +105,7 @@ final class EbeanConnector {
         if (ebeanServerName == DEFAULT) {
             dbCreate = dsConfig.dataSource.dbCreate.toString() == 'create'
         } else {
-            dbCreate = dsConfig.dataSources."$ebeanServerName".dbCreate.toString() == 'create'
+            dbCreate = dsConfig.dataSources[ebeanServerName].dbCreate.toString() == 'create'
         }
 
         ServerConfig serverConfig = new ServerConfig(
