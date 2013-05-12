@@ -32,6 +32,8 @@ public class DefaultEbeanProvider extends AbstractEbeanProvider {
         return INSTANCE;
     }
 
+    private DefaultEbeanProvider() {}
+
     @Override
     protected EbeanServer getEbeanServer(String ebeanServerName) {
         return EbeanServerHolder.getInstance().fetchEbeanServer(ebeanServerName);

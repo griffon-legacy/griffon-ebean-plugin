@@ -40,6 +40,8 @@ class EbeanServerHolder {
         INSTANCE
     }
 
+    private EbeanServerHolder() {}
+
     String[] getEbeanServerNames() {
         List<String> ebeanServerNames = new ArrayList().addAll(ebeanServers.keySet())
         ebeanServerNames.toArray(new String[ebeanServerNames.size()])

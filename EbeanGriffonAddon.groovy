@@ -27,10 +27,7 @@ import static griffon.util.ConfigUtils.getConfigValueAsBoolean
  */
 class EbeanGriffonAddon {
     void addonPostInit(GriffonApplication app) {
-        ConfigObject config = EbeanConnector.instance.createConfig(app)
-        if (getConfigValueAsBoolean(app.config, 'griffon.ebean.connect.onstartup', true)) {
-            EbeanConnector.instance.connect(app, config)
-        }
+        EbeanConnector.instance.createConfig(app)
         def types = app.config.griffon?.ebean?.injectInto ?: ['controller']
         for(String type : types) {
             for(GriffonClass gc : app.artifactManager.getClassesOfType(type)) {
@@ -41,6 +38,12 @@ class EbeanGriffonAddon {
     }
 
     Map events = [
+        LoadAddonsEnd: { app, addons ->
+            if (getConfigValueAsBoolean(app.config, 'griffon.ebean.connect.onstartup', true)) {
+                ConfigObject config = EbeanConnector.instance.createConfig(app)
+                EbeanConnector.instance.connect(app, config)
+            }
+        },
         ShutdownStart: { app ->
             EbeanConnector.instance.disconnect(app)
         }
